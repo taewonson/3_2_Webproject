@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake - 기록</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="logo"><a href="index.html">SNAKE</a></div>
+  <nav class="site-nav">
+    <a href="index.html">홈</a>
+    <a href="game.html">게임</a>
+    <a href="rules.html">게임 설명</a>
+    <a href="achievements.html">업적</a>
+    <a href="history.html" class="current">기록</a>
+  </nav>
+</header>
+
+<main class="layout-history">
+  <section class="history-controls" aria-label="모드 탭">
+    <button class="mode-tab active" data-mode="all">전체</button>
+    <button class="mode-tab" data-mode="classic">Classic</button>
+    <button class="mode-tab" data-mode="expert">Expert</button>
+  </section>
+
+  <section class="history-grid">
+    <div class="card stat">
+      <div class="stat-title">플레이 횟수</div>
+      <div class="stat-value" id="stat-plays">0</div>
+      <div class="stat-sub" id="stat-plays-sub">-</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-title">최고 점수</div>
+      <div class="stat-value" id="stat-best">0</div>
+      <div class="stat-sub" id="stat-best-sub">-</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-title">평균 점수 (최근 20판)</div>
+      <div class="stat-value" id="stat-avg">0</div>
+      <div class="stat-sub" id="stat-avg-sub">-</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-title">최고 길이</div>
+      <div class="stat-value" id="stat-bestlen">0</div>
+      <div class="stat-sub" id="stat-bestlen-sub">-</div>
+    </div>
+  </section>
+
+  <section class="history-table card">
+    <div class="table-head">
+      <h2>최근 기록</h2>
+      <div class="table-actions">
+        <button id="btn-clear" class="danger">기록 초기화</button>
+      </div>
+    </div>
+
+    <div class="table-scroll" role="region" aria-label="최근 기록 표 스크롤">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 160px;">날짜</th>
+            <th style="width: 90px;">모드</th>
+            <th style="width: 90px;">점수</th>
+            <th style="width: 90px;">길이</th>
+            <th style="width: 120px;">난이도</th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td colspan="5" class="muted">기록이 없습니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  Made by taewonson
+</footer>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'snake_run_history_v1';
+  const MAX_KEEP = 500;
+  let currentMode = 'all';
+
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  function safeParse(json, fallback) {
+    try {
+      const v = JSON.parse(json);
+      return (v === null || v === undefined) ? fallback : v;
+    } catch(e) {
+      return fallback;
+    }
+  }
+
+  function loadRuns() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const arr = safeParse(raw, []);
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  function saveRuns(runs) {
+    const pruned = runs.slice(0, MAX_KEEP);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+  }
+
+  function formatKST(ts) {
+    if (!ts) return '-';
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return '-';
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mi = String(d.getMinutes()).padStart(2,'0');
+    const ss = String(d.getSeconds()).padStart(2,'0');
+    return `${yy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+  }
+
+  function filterRuns(runs) {
+    if (currentMode === 'all') return runs;
+    return runs.filter(r => r && r.mode === currentMode);
+  }
+
+  function calcStats(runs) {
+    const total = runs.length;
+    const best = runs.reduce((a,r) => Math.max(a, Number(r.score)||0), 0);
+    const bestRun = runs.find(r => (Number(r.score)||0) === best);
+    const bestTs = bestRun ? formatKST(bestRun.endedAt) : '-';
+
+    const recent = runs.slice(0, 20);
+    const avg = recent.length ? Math.round(recent.reduce((s,r)=>s+(Number(r.score)||0),0)/recent.length) : 0;
+
+    const bestLen = runs.reduce((a,r) => Math.max(a, Number(r.length)||0), 0);
+    const bestLenRun = runs.find(r => (Number(r.length)||0) === bestLen);
+    const bestLenTs = bestLenRun ? formatKST(bestLenRun.endedAt) : '-';
+
+    return {
+      total,
+      best,
+      bestTs,
+      avg,
+      recentCount: recent.length,
+      bestLen,
+      bestLenTs
+    };
+  }
+
+  function renderStats(allRuns) {
+    const runs = filterRuns(allRuns);
+    const s = calcStats(runs);
+
+    $('#stat-plays').textContent = String(s.total);
+    $('#stat-plays-sub').textContent = (currentMode==='all') ? '전체 기준' : `${currentMode} 기준`;
+
+    $('#stat-best').textContent = String(s.best);
+    $('#stat-best-sub').textContent = s.best ? `달성: ${s.bestTs}` : '-';
+
+    $('#stat-avg').textContent = String(s.avg);
+    $('#stat-avg-sub').textContent = s.recentCount ? `표본: 최근 ${s.recentCount}판` : '-';
+
+    $('#stat-bestlen').textContent = String(s.bestLen);
+    $('#stat-bestlen-sub').textContent = s.bestLen ? `달성: ${s.bestLenTs}` : '-';
+  }
+
+  function renderTable(allRuns) {
+    const runs = filterRuns(allRuns);
+    const tbody = $('#history-tbody');
+    tbody.innerHTML = '';
+
+    if (!runs.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="5" class="muted">기록이 없습니다.</td>';
+      tbody.appendChild(tr);
+      return;
+    }
+
+    for (const r of runs.slice(0, 50)) {
+      const tr = document.createElement('tr');
+      const modeLabel = r.mode === 'expert' ? 'Expert' : 'Classic';
+      const diff = r.mode === 'expert' ? (r.difficulty || '-') : '-';
+      tr.innerHTML = `
+        <td>${formatKST(r.endedAt)}</td>
+        <td>${modeLabel}</td>
+        <td>${Number(r.score)||0}</td>
+        <td>${Number(r.length)||0}</td>
+        <td>${diff}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function rerender() {
+    const runs = loadRuns();
+    renderStats(runs);
+    renderTable(runs);
+  }
+
+  // 탭
+  $$('.mode-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.mode-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = btn.dataset.mode;
+      rerender();
+    });
+  });
+
+  // 초기화
+  $('#btn-clear').addEventListener('click', () => {
+    if (!confirm('기록을 전부 삭제할까요?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    rerender();
+  });
+
+  rerender();
+})();
+</script>
+</body>
+</html>

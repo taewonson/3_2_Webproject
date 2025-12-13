@@ -223,7 +223,10 @@
 
     computeTickInterval();
 
-    const actualDeltaPercent = Math.round((speedFactor - oldFactor) * 100);
+        // 업적/통계용: '실제 속도 이벤트 적용' 시점에서만 카운트
+    if (opt && opt.onSpeedEvent) opt.onSpeedEvent();
+
+const actualDeltaPercent = Math.round((speedFactor - oldFactor) * 100);
     const currentPercent = Math.round(speedFactor * 100);
     let diffPercent = Math.round(plannedDelta * 100);
 
@@ -290,6 +293,11 @@
     if (!hasStarted) hasStarted = true;
     resetGame();
     isRunning = true;
+
+    // 업적 시스템 연동: 새 판 시작 알림
+    if (opt && typeof opt.onGameStart === 'function') {
+      opt.onGameStart({ mode: 'expert', difficulty: difficulty });
+    }
     if (gameLoopId !== null) clearInterval(gameLoopId);
     gameLoopId = setInterval(tick, currentTickMs);
   }
@@ -471,7 +479,12 @@
   function handleAppleEaten() {
     score++;
     updateScoreUI();
-    applesSinceEvent++;
+    
+    // 업적 시스템 연동: 사과(점수) 이벤트
+    if (opt && typeof opt.onAppleEaten === 'function') {
+      opt.onAppleEaten({ mode: 'expert', score });
+    }
+applesSinceEvent++;
 
     // "다음 사과를 먹을 때까지 유지" → 여기서 추적지뢰 제거
     if (mine) {
@@ -794,6 +807,11 @@
       type === "teleport"  ? "텔레포트" : "차원이동";
 
     showHUD(`아이템 등장: ${name}`);
+  
+    // 업적/외부 통계용 콜백: 아이템 '등장' 이벤트 전달
+    if (opt && typeof opt.onItemSpawn === 'function') {
+      try { opt.onItemSpawn({ type, count }); } catch (e) {}
+    }
   }
 
   /**
@@ -831,7 +849,12 @@
    * 아이템 효과 적용
    */
   function applyItemEffect(item) {
-    // ===== 폭탄 / 특수폭탄 =====
+    
+    // 업적 시스템 연동: 아이템 사용 이벤트
+    if (opt && typeof opt.onItemUsed === 'function') {
+      opt.onItemUsed({ mode: 'expert', type: item.type });
+    }
+// ===== 폭탄 / 특수폭탄 =====
     if (item.type === "bomb" || item.type === "superbomb") {
       const cx = item.x;
       const cy = item.y;
@@ -937,6 +960,10 @@
     isGameOver = true;
     isRunning = false;
     lastGameOverTime = Date.now();
+    // 업적 시스템 연동: 게임 종료 알림
+    if (opt && typeof opt.onGameOver === 'function') {
+      opt.onGameOver({ mode: 'expert', score, length: snake.length, difficulty: difficulty });
+    }
     if (gameLoopId !== null) {
       clearInterval(gameLoopId);
       gameLoopId = null;

@@ -49,6 +49,10 @@
   // 처음 게임이 시작된 적 있는지 여부
   let hasStarted = false;
 
+  // 이번 판 시작 시각(생존시간 업적용)
+  let runStartTs = 0;
+
+
   // 키 이벤트 핸들러 참조
   let keyHandler = null;
 
@@ -177,7 +181,9 @@
     // ★ 처음 한 번만 플래그 ON
     if (!hasStarted) hasStarted = true;
     reset();
-    isRunning=true;
+    runStartTs = Date.now();
+    if (opt.onGameStart) opt.onGameStart();
+    isRunning = true;
     if(loop) clearInterval(loop);
     loop=setInterval(tick,tickMs);
   }
@@ -290,7 +296,8 @@
     // 사과 먹었는지 체크
     if(apple && nx===apple.x && ny===apple.y){
       score++;
-      scoreEl.textContent=score;
+      scoreEl.textContent = score;
+      if (opt.onAppleEaten) opt.onAppleEaten(score);
       placeApple();   // 사과 새로 생성
       // 꼬리 안 자름 (길이 1 증가)
     } else {
@@ -305,9 +312,13 @@
    * 게임오버 처리
    */
   function gameOver(){
-    isGameOver=true;
-    isRunning=false;
-    if(loop){ clearInterval(loop); loop=null; }
+    isGameOver = true;
+    isRunning = false;
+    if (loop) { clearInterval(loop); loop = null; }
+
+    // 업적/기록용 콜백
+    if (opt.onGameOver) opt.onGameOver({ score, length: snake.length });
+
     draw(); // 게임오버 오버레이 표시
   }
 

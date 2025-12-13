@@ -2,9 +2,77 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
   <title>Snake - 업적</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* achievements.html 전용 - 기존 톤 유지, 배치만 정리 */
+
+    .achievements-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 16px;
+    }
+
+    /* 좌측: Classic/Expert 보기 버튼을 좌/우 정렬 */
+    .mode-switch{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 220px;
+    }
+    .mode-row{
+      display:flex;
+      justify-content:space-between; /* 좌/우 끝 정렬 */
+      align-items:center;
+      gap: 12px;
+    }
+    .mode-btn{
+      border:none;
+      background:transparent;
+      color:#1976d2;
+      font-weight:800;
+      cursor:pointer;
+      padding: 0;
+      font-size: 0.95rem;
+    }
+    .mode-btn.active{
+      color:#111; /* 선택 강조(톤만 살짝) */
+      cursor:default;
+    }
+    .mode-current{
+      font-weight:700;
+      font-size: 0.9rem;
+      color:#444;
+    }
+
+    /* 우측: 필터 + 초기화 */
+    .right-tools{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .filter-box{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .achievement-reset{
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background: #e0e0e0;
+      font-size: 0.85rem;
+    }
+    .achievement-reset:hover{
+      background:#d9d9d9;
+    }
+  </style>
 </head>
+
 <body>
 <header class="site-header">
   <div class="logo"><a href="index.html">SNAKE</a></div>
@@ -13,51 +81,41 @@
     <a href="game.html">게임</a>
     <a href="rules.html">게임 설명</a>
     <a href="achievements.html" class="current">업적</a>
-    <a href="ranking.html">랭킹</a>
+    <a href="history.html">기록</a>
   </nav>
 </header>
 
 <main class="layout-achievements">
   <section class="achievements-header">
-    <label for="achievement-filter">필터</label>
-    <select id="achievement-filter">
-      <option value="all">전체</option>
-      <option value="done">달성함</option>
-      <option value="todo">달성하지 않음</option>
-    </select>
+
+    <!-- Classic/Expert 보기: 버튼 2개를 좌/우 끝 정렬 -->
+    <div class="mode-switch">
+      <div class="mode-row">
+        <button id="btn-classic" class="mode-btn" type="button">Classic 업적 보기</button>
+        <button id="btn-expert" class="mode-btn" type="button">Expert 업적 보기</button>
+      </div>
+      <div id="mode-current" class="mode-current">현재: Classic 업적</div>
+    </div>
+
+    <div class="right-tools">
+      <div class="filter-box">
+        <label for="achievement-filter">필터</label>
+        <select id="achievement-filter">
+          <option value="all">전체</option>
+          <option value="done">달성함</option>
+          <option value="todo">달성하지 않음</option>
+        </select>
+      </div>
+
+      <button id="achievement-reset" class="achievement-reset" type="button">
+        업적 초기화
+      </button>
+    </div>
   </section>
 
   <section class="achievements-main">
-    <!-- 리스트 -->
-    <div class="achievement-list" id="achievement-list">
-      <!-- 예시 업적들 (원하면 이름/조건 변경) -->
-      <button class="achievement-item done"
-              data-id="first-apple"
-              data-status="done">
-        <span>첫 한 입</span>
-        <span class="badge">달성</span>
-      </button>
-      <button class="achievement-item todo"
-              data-id="ten-score"
-              data-status="todo">
-        <span>점수 10점 달성</span>
-        <span class="badge">미달성</span>
-      </button>
-      <button class="achievement-item todo"
-              data-id="survivor"
-              data-status="todo">
-        <span>30초 생존</span>
-        <span class="badge">미달성</span>
-      </button>
-      <button class="achievement-item done"
-              data-id="combo"
-              data-status="done">
-        <span>연속 3개 먹기</span>
-        <span class="badge">달성</span>
-      </button>
-    </div>
+    <div class="achievement-list" id="achievement-list"></div>
 
-    <!-- 상세 -->
     <div class="achievement-detail" id="achievement-detail">
       <h2>업적 상세</h2>
       <p>업적을 선택하면 이 영역에 이름, 조건, 달성 여부 등의 설명을 보여줍니다.</p>
@@ -69,80 +127,150 @@
   Made by taewonson
 </footer>
 
-<script>
-  const achievementInfo = {
-    "first-apple": {
-      title: "첫 한 입",
-      desc: "게임 중 사과를 처음으로 1개 이상 먹으면 달성되는 업적입니다.",
-      condition: "한 판에서 사과 1개 이상 먹기.",
-      status: "달성함"
-    },
-    "ten-score": {
-      title: "점수 10점 달성",
-      desc: "점수 10점을 돌파하면 달성되는 업적입니다.",
-      condition: "한 판에서 점수 10점 이상 기록.",
-      status: "달성하지 않음"
-    },
-    "survivor": {
-      title: "30초 생존",
-      desc: "게임 시작 후 30초 이상 생존하면 달성되는 업적입니다.",
-      condition: "게임 시작 후 30초 이상 생존 유지.",
-      status: "달성하지 않음"
-    },
-    "combo": {
-      title: "연속 3개 먹기",
-      desc: "짧은 시간 내에 사과를 3개 연속으로 먹으면 달성되는 업적입니다.",
-      condition: "제한 시간 내에 사과 3개 연속 먹기.",
-      status: "달성함"
-    }
-  };
+<script src="achievements_manager.js"></script>
 
-  const filterSelect = document.getElementById("achievement-filter");
-  const listEl = document.getElementById("achievement-list");
+<script>
+
+  const btnClassic = document.getElementById("btn-classic");
+  const btnExpert  = document.getElementById("btn-expert");
+  const modeCurrentEl = document.getElementById("mode-current");
+
+  const filterSelect  = document.getElementById("achievement-filter");
+  const resetBtn      = document.getElementById("achievement-reset");
+
+  const listEl   = document.getElementById("achievement-list");
   const detailEl = document.getElementById("achievement-detail");
 
-  function updateFilter() {
+  let currentMode = "classic"; // "classic" | "expert"
+  let selectedId = null;
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function getUnlockedMap(mode){
+    const st = window.Achievements.getState();
+    return (st.unlocked && st.unlocked[mode]) ? st.unlocked[mode] : {};
+  }
+
+  function setModeUI(){
+    if(currentMode === "classic"){
+      btnClassic.classList.add("active");
+      btnExpert.classList.remove("active");
+      modeCurrentEl.textContent = "현재: Classic 업적";
+    } else {
+      btnExpert.classList.add("active");
+      btnClassic.classList.remove("active");
+      modeCurrentEl.textContent = "현재: Expert 업적";
+    }
+  }
+
+  function renderList(){
+    const defs = window.Achievements.getDefinitions(currentMode);
+    const unlocked = getUnlockedMap(currentMode);
+
+    listEl.innerHTML = "";
+
+    defs.forEach(def => {
+      const done = !!unlocked[def.id];
+
+      const btn = document.createElement("button");
+      btn.className = "achievement-item " + (done ? "done" : "todo");
+      btn.dataset.id = def.id;
+      btn.dataset.status = done ? "done" : "todo";
+
+      const left = document.createElement("span");
+      left.textContent = def.title;
+
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = done ? "달성" : "미달성";
+
+      btn.appendChild(left);
+      btn.appendChild(badge);
+
+      btn.addEventListener("click", () => {
+        selectedId = def.id;
+        showDetail(def);
+      });
+
+      listEl.appendChild(btn);
+    });
+
+    updateFilter();
+
+    if(selectedId){
+      const keep = defs.find(d => d.id === selectedId);
+      if(keep) showDetail(keep);
+      else resetDetail();
+    } else {
+      resetDetail();
+    }
+  }
+
+  function updateFilter(){
     const value = filterSelect.value;
     const items = listEl.querySelectorAll(".achievement-item");
 
     items.forEach(item => {
-      const status = item.dataset.status; // "done" or "todo"
-      if (value === "all") {
-        item.style.display = "";
-      } else if (value === status) {
-        item.style.display = "";
-      } else {
-        item.style.display = "none";
-      }
+      const status = item.dataset.status;
+      if (value === "all") item.style.display = "";
+      else if (value === status) item.style.display = "";
+      else item.style.display = "none";
     });
   }
 
-  function showDetail(id) {
-    const data = achievementInfo[id];
-    if (!data) return;
+  function resetDetail(){
     detailEl.innerHTML = `
-      <h2>${data.title}</h2>
-      <p><strong>설명:</strong> ${data.desc}</p>
-      <p><strong>달성 조건:</strong> ${data.condition}</p>
-      <p><strong>현재 상태:</strong> ${data.status}</p>
+      <h2>업적 상세</h2>
+      <p>업적을 선택하면 이 영역에 이름, 조건, 달성 여부 등의 설명을 보여줍니다.</p>
     `;
   }
 
-  listEl.addEventListener("click", (e) => {
-    const item = e.target.closest(".achievement-item");
-    if (!item) return;
+  function showDetail(def){
+    const done = window.Achievements.isUnlocked(currentMode, def.id);
+    detailEl.innerHTML = `
+      <h2>${escapeHtml(def.title)}</h2>
+      <p><strong>설명:</strong> ${escapeHtml(def.desc)}</p>
+      <p><strong>달성 조건:</strong> ${escapeHtml(def.conditionText || "-")}</p>
+      <p><strong>현재 상태:</strong> ${done ? "달성함" : "달성하지 않음"}</p>
+      <p><strong>적용 모드:</strong> ${currentMode === "classic" ? "Classic" : "Expert"}</p>
+    `;
+  }
 
-    listEl.querySelectorAll(".achievement-item").forEach(i => i.classList.remove("active"));
-    item.classList.add("active");
+  function setMode(mode){
+    if(currentMode === mode) return;
+    currentMode = mode;
+    selectedId = null; // 모드 바뀌면 상세 선택 초기화
+    setModeUI();
+    renderList();
+  }
 
-    const id = item.dataset.id;
-    showDetail(id);
-  });
+  function resetAchievements(){
+    window.Achievements.clearAll();
+    selectedId = null;
+    renderList();
+    resetDetail();
+    alert("업적 데이터가 초기화되었습니다. (localStorage)");
+  }
+
+  // 버튼 2개가 동일 기능(해당 모드 보기)
+  btnClassic.addEventListener("click", () => setMode("classic"));
+  btnExpert.addEventListener("click", () => setMode("expert"));
 
   filterSelect.addEventListener("change", updateFilter);
+  resetBtn.addEventListener("click", resetAchievements);
 
-  // 초기 필터 적용
-  updateFilter();
+  window.addEventListener("DOMContentLoaded", () => {
+    currentMode = "classic";
+    setModeUI();
+    renderList();
+  });
 </script>
 </body>
 </html>
