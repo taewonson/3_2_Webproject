@@ -1,4 +1,15 @@
 <!DOCTYPE html>
+<!--
+==============================
+ FEATURE QUICK FIND (Ctrl+F)
+------------------------------
+ [UI:MODE_SWITCH]: Classic/Expert 모드 전환 UI/이벤트
+ [UI:START_STOP]: Start/Stop 버튼 + 키 입력(ESC)
+ [HOOK:ACHV]: 업적 훅 전달(onRunStart/onScore/onItemSpawn/onSpeedEvent/onRunEnd)
+ [HOOK:HISTORY]: 게임오버 시 localStorage 기록 저장(snake_run_history_v1)
+ [OVERLAY:ACHV_PANEL]: 게임오버 후 업적 요약 패널(achv-panel)
+==============================
+-->
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -236,7 +247,9 @@
 <body>
 
     <!-- header: 공통 헤더 -->
-  <header class="site-header">
+  
+<!-- [NAV] 사이트 공통 헤더/내비게이션 -->
+<header class="site-header">
     <div class="logo">
       <a href="index.html">SNAKE</a>
     </div>
@@ -250,7 +263,9 @@
   </header>
 
   <!-- main -->
-  <main class="main">
+  
+<!-- [MAIN] 페이지별 핵심 콘텐츠 영역 -->
+<main class="main">
     <div class="game-layout">
 
       <!-- 왼쪽: 정보 / 점수 -->
@@ -334,7 +349,9 @@
   </main>
 
   <!-- footer -->
-  <footer class="site-footer">
+  
+<!-- [FOOTER] 사이트 공통 푸터 -->
+<footer class="site-footer">
     Made by taewonson
   </footer>
 

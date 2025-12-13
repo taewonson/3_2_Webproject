@@ -1,3 +1,18 @@
+/*
+==============================
+ FEATURE QUICK FIND (Ctrl+F)
+------------------------------
+ [CLASSIC:REGISTER]: 
+// [CLASSIC:REGISTER] 게임 팩토리 등록. game.html에서 모드 전환 시 SnakeGames.classic(...) 호출.
+SnakeGames.classic 등록(게임.html이 이 팩토리를 호출)
+ [CLASSIC:STATE]: 클래식 모드 상태(뱀/사과/점수/방향/루프)
+ [CLASSIC:INPUT]: 키 입력 처리(방향키/ESC/Start/Stop 연동)
+ [CLASSIC:LOOP]: 게임 루프(tick) 및 그리기(draw)
+ [CLASSIC:GAMEOVER]: 게임오버 처리 + opt.onGameOver(payload)
+ [CLASSIC:DESTROY]: 모드 전환 시 정리(타이머/리스너 제거)
+==============================
+*/
+
 // classic_script.js
 // ========================================
 //  ▷ 모드: Classic
@@ -98,7 +113,12 @@
   /**
    * 게임 모듈 파괴 (이벤트 해제, 루프 정리)
    */
-  function destroy(){
+  
+// [CLASSIC:DESTROY] 모드 전환/페이지 이동 시 호출.
+// - setInterval/timeout 정리
+// - 키 리스너 정리
+// - 외부(opt) 콜백 호출은 하지 않음(상위에서 처리)
+function destroy(){
     document.removeEventListener("keydown", keyHandler);
     startBtn.removeEventListener("click", startGameClick);
     stopBtn.removeEventListener("click", stopGameClick);
@@ -311,7 +331,10 @@
   /**
    * 게임오버 처리
    */
-  function gameOver(){
+  
+// [CLASSIC:GAMEOVER] 충돌/종료 시 한 번만 실행.
+// opt.onGameOver로 score/length/difficulty(표시용) 전달하여 history 저장/업적 요약에 사용.
+function gameOver(){
     isGameOver = true;
     isRunning = false;
     if (loop) { clearInterval(loop); loop = null; }

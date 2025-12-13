@@ -1,3 +1,20 @@
+/*
+==============================
+ FEATURE QUICK FIND (Ctrl+F)
+------------------------------
+ [EXPERT:REGISTER]: SnakeGames.expert 등록
+ [EXPERT:STATE]: 상태/상수(장애물, 지뢰, 아이템, 속도 이벤트 등)
+ [EXPERT:INPUT]: 키 입력/일시정지/시작 처리
+ [EXPERT:LOOP]: 메인 루프 tick + draw + 이벤트 처리
+ [EXPERT:ITEM_SPAWN]: 아이템 생성(spawnItem) + opt.onItemSpawn(payload)
+ [EXPERT:ITEM_APPLY]: 아이템 효과 적용(폭탄/특수폭탄/축소/텔포/차원이동)
+ [EXPERT:SPEED_EVENT]: 속도 이벤트 ±10/±20 발생/복귀
+ [EXPERT:MINES]: 추적 지뢰 이동 로직
+ [EXPERT:GAMEOVER]: 게임오버 처리 + opt.onGameOver({score,length,difficulty})
+ [EXPERT:DESTROY]: 모드 전환 시 정리(타이머/리스너/애니메이션)
+==============================
+*/
+
 // expert_script.js
 // ========================================
 //  ▷ 모드: Expert
@@ -144,7 +161,12 @@
   /**
    * Expert 모드 파괴 (이벤트 해제 등)
    */
-  function destroy() {
+  
+// [EXPERT:DESTROY] 모드 전환/정지 시 정리.
+// - interval/timeout 취소
+// - 리스너 제거
+// - UI/HUD 상태 초기화
+function destroy() {
     if (gameLoopId !== null) {
       clearInterval(gameLoopId);
       gameLoopId = null;
@@ -787,7 +809,10 @@ applesSinceEvent++;
    * - shrink: 3개
    * - teleport/phase: 1개
    */
-  function spawnItem(type) {
+  
+// [EXPERT:ITEM_SPAWN] 아이템을 필드에 생성.
+// 중요: 업적/통계 추적을 위해 opt.onItemSpawn({type, count})를 호출(요구사항: '등장=획득'이면 상위에서 onItemPicked도 증가).
+function spawnItem(type) {
     const count =
       type === "bomb"      ? 4 :
       type === "superbomb" ? 1 :
@@ -956,7 +981,10 @@ applesSinceEvent++;
   // 게임 루프 / 이동
   // =========================
 
-  function gameOver() {
+  
+// [EXPERT:GAMEOVER] 충돌/종료 시 한 번만 실행.
+// opt.onGameOver({mode:'expert', score, length: snake.length, difficulty})로 history 저장에 필요한 값 전달.
+function gameOver() {
     isGameOver = true;
     isRunning = false;
     lastGameOverTime = Date.now();

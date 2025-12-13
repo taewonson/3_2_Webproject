@@ -1,3 +1,17 @@
+/*
+==============================
+ FEATURE QUICK FIND (Ctrl+F)
+------------------------------
+ [ACHV:STORAGE_KEY]: 업적 저장 키/포맷(localStorage)
+ [ACHV:DEFINITIONS]: Classic/Expert 업적 정의 목록
+ [ACHV:RUN_CONTEXT]: 한 판(run) 기준 카운터/상태 초기화
+ [ACHV:HOOK_ITEM]: 아이템 등장/획득 추적 훅
+ [ACHV:HOOK_SPEED]: 속도 이벤트 추적 훅
+ [ACHV:UNLOCK]: 업적 체크/해금/저장
+ [ACHV:PUBLIC_API]: 게임에서 호출하는 공개 API 목록
+==============================
+*/
+
 // achievements_manager.js
 // ========================================
 //  Snake Web Game - Achievements Manager (v2)
@@ -12,6 +26,8 @@
   // -----------------------------
   // 업적 정의 (모드별)
   // -----------------------------
+
+// [ACHV:DEFINITIONS] 모드별 업적 목록. check(ctx)는 '한 판(run) 컨텍스트'를 기반으로 true/false 반환.
   const DEFINITIONS = {
     // ✅ Classic 업적: "한 판" 기준 점수 중심 (게임 로직 변경 없음)
     classic: [
@@ -68,7 +84,9 @@
   // -----------------------------
   // 저장 / 로드
   // -----------------------------
-  function loadState() {
+  
+// [ACHV:STORAGE_KEY] localStorage에서 업적 상태 로드(해금 여부/통계). 파싱 실패 시 안전하게 초기화.
+function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : null;
@@ -91,7 +109,9 @@
     }
   }
 
-  function saveState(state) {
+  
+// [ACHV:STORAGE_KEY] 업적 상태 저장. 호출 빈도가 높을 수 있으니 가벼운 구조 유지.
+function saveState(state) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
@@ -231,6 +251,14 @@
     if (typeof finalScore === "number") runCtx.score = finalScore;
     evaluateAll(mode);
   }
+
+// [ACHV:PUBLIC_API] 게임/페이지에서 사용하는 진입점들.
+// - onRunStart(mode): 한 판 시작
+// - onScore(mode, score): 점수 갱신
+// - onItemSpawned(mode, count): 아이템 등장 카운트(요구사항: '등장=획득'이면 onItemPicked도 같이 올림)
+// - onItemPicked(mode, type, count): 아이템 타입별 획득 카운트
+// - onSpeedEvent(mode, kind): 속도 이벤트 발생 여부 기록
+// - onRunEnd(mode): 한 판 종료(요약/저장)
 
   global.Achievements = {
     STORAGE_KEY,
